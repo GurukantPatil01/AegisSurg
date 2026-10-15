@@ -1,0 +1,948 @@
+/* ==========================================================================
+   GENTES DENTAL OS — MINIMAL MODERN BRUTALISM DESIGN SYSTEM
+   Editorial Technical Layout • High-Contrast Monochrome • 2px Solid Borders
+   ========================================================================== */
+
+:root {
+  --brutal-bg: #f7f6f2;
+  --brutal-surface: #ffffff;
+  --brutal-surface-subtle: #eeede7;
+  --brutal-black: #000000;
+  --brutal-text: #111111;
+  --brutal-text-secondary: #555555;
+  --brutal-text-muted: #777777;
+  --brutal-border: 2px solid #000000;
+  --brutal-border-thin: 1px solid #000000;
+  --brutal-shadow: 3px 3px 0px #000000;
+  --brutal-shadow-sm: 2px 2px 0px #000000;
+
+  /* Accent (Used strictly & sparingly) */
+  --brutal-accent: #0047ff; /* International Klein Blue */
+  --brutal-alert: #ff3b00;  /* Signal Vermillion */
+  --brutal-success: #008844;
+}
+
+.dental-cockpit {
+  min-height: 100vh;
+  background-color: var(--brutal-bg);
+  color: var(--brutal-text);
+  font-family: var(--font-sans);
+  display: flex;
+  flex-direction: column;
+}
+
+/* ==========================================================================
+   Header / Masthead
+   ========================================================================== */
+.dental-header {
+  background: #ffffff;
+  border-bottom: var(--brutal-border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.dental-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: var(--brutal-black);
+}
+
+.dental-brand-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--brutal-black);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  border: var(--brutal-border);
+}
+
+.dental-brand-title {
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  color: var(--brutal-black);
+  line-height: 1;
+}
+
+.dental-brand-subtitle {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--brutal-text-secondary);
+  margin-top: 2px;
+}
+
+/* Preset Scenario Bar */
+.dental-scenarios {
+  display: flex;
+  align-items: center;
+  border: var(--brutal-border);
+  background: #ffffff;
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+.dental-scenarios-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  background: var(--brutal-black);
+  color: #ffffff;
+}
+
+.dental-scenario-btn {
+  background: #ffffff;
+  border: none;
+  border-right: var(--brutal-border-thin);
+  padding: 6px 12px;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brutal-black);
+  cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.dental-scenario-btn:last-child {
+  border-right: none;
+}
+
+.dental-scenario-btn:hover {
+  background: var(--brutal-surface-subtle);
+  transform: none;
+  box-shadow: none;
+}
+
+.dental-scenario-btn.active {
+  background: var(--brutal-black);
+  color: #ffffff;
+}
+
+/* Header Telemetry & Switcher */
+.dental-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dental-live-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: var(--brutal-border);
+  background: #ffffff;
+  padding: 6px 12px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+.pulse-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--brutal-alert);
+  display: inline-block;
+}
+
+.dental-switch-link {
+  background: #ffffff;
+  border: var(--brutal-border);
+  color: var(--brutal-black);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 6px 12px;
+  box-shadow: var(--brutal-shadow-sm);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.dental-switch-link:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--brutal-shadow);
+  background: #ffffff;
+}
+
+/* ==========================================================================
+   Main Workspace
+   ========================================================================== */
+.dental-main {
+  max-width: 1720px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* Clinical Context Banner */
+.dental-context-bar {
+  background: #ffffff;
+  border: var(--brutal-border);
+  padding: 12px 18px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  box-shadow: var(--brutal-shadow);
+}
+
+.dental-context-group {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dental-context-item {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  text-transform: uppercase;
+  color: var(--brutal-text-secondary);
+}
+
+.dental-context-item strong,
+.dental-context-item span {
+  color: var(--brutal-black);
+  font-weight: 800;
+}
+
+.dental-divider-v {
+  width: 2px;
+  height: 18px;
+  background: var(--brutal-black);
+}
+
+.dental-pill {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border: var(--brutal-border-thin);
+  background: #ffffff;
+}
+
+.dental-pill-emerald {
+  background: #ffffff;
+  color: var(--brutal-success);
+  border-color: var(--brutal-black);
+}
+
+.dental-pill-blue {
+  background: #ffffff;
+  color: var(--brutal-accent);
+  border-color: var(--brutal-black);
+}
+
+.dental-pill-red {
+  background: var(--brutal-alert);
+  color: #ffffff;
+  border-color: var(--brutal-black);
+}
+
+/* ==========================================================================
+   Odontogram Card (Universal 32 Teeth)
+   ========================================================================== */
+.odontogram-card {
+  background: #ffffff;
+  border: var(--brutal-border);
+  padding: 18px 20px;
+  box-shadow: var(--brutal-shadow);
+}
+
+.odontogram-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+  border-bottom: var(--brutal-border);
+}
+
+.odontogram-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.odontogram-title {
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--brutal-black);
+}
+
+.odontogram-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brutal-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.odontogram-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-box {
+  width: 12px;
+  height: 12px;
+  border: var(--brutal-border-thin);
+}
+
+.legend-box-sound {
+  background: #ffffff;
+}
+
+.legend-box-caries {
+  background: var(--brutal-black);
+}
+
+.legend-box-restored {
+  background: var(--brutal-accent);
+}
+
+.legend-box-alert {
+  background: var(--brutal-alert);
+}
+
+/* Arch Layout */
+.arch-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--brutal-black);
+  margin-bottom: 8px;
+  border-left: 4px solid var(--brutal-black);
+  padding-left: 8px;
+}
+
+.arch-teeth-grid {
+  display: grid;
+  grid-template-columns: repeat(16, minmax(0, 1fr));
+  gap: 4px;
+}
+
+.tooth-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 6px 2px;
+  background: #ffffff;
+  border: var(--brutal-border-thin);
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease;
+  user-select: none;
+}
+
+.tooth-item:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--brutal-shadow-sm);
+  background: var(--brutal-surface-subtle);
+  border: var(--brutal-border);
+}
+
+.tooth-item.selected {
+  background: #ffffff;
+  border: 2px solid var(--brutal-accent);
+  box-shadow: 2px 2px 0px var(--brutal-accent);
+  transform: translate(-1px, -1px);
+}
+
+.tooth-item.pulpal-alert {
+  background: #fff5f5;
+  border: 2px solid var(--brutal-alert);
+  box-shadow: 2px 2px 0px var(--brutal-alert);
+}
+
+.tooth-top-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  font-size: 11px;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  color: var(--brutal-black);
+  padding: 0 4px;
+  margin-bottom: 3px;
+}
+
+.bop-dot {
+  width: 6px;
+  height: 6px;
+  background: var(--brutal-alert);
+}
+
+.tooth-svg {
+  width: 36px;
+  height: 36px;
+}
+
+.tooth-perio-val {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brutal-text-secondary);
+  margin-top: 4px;
+}
+
+.tooth-perio-val.perio-risk {
+  color: var(--brutal-alert);
+  font-weight: 900;
+  background: #fee2e2;
+  padding: 0 2px;
+}
+
+.arch-midline {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 12px 0;
+}
+
+.arch-midline-line {
+  position: absolute;
+  inset-inline: 0;
+  height: 2px;
+  background: var(--brutal-black);
+}
+
+.arch-midline-badge {
+  position: relative;
+  background: #ffffff;
+  border: var(--brutal-border);
+  padding: 2px 12px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* ==========================================================================
+   Three-Column Cockpit Grid (HUD, Gate, GentesBot)
+   ========================================================================== */
+.cockpit-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+@media (max-width: 1200px) {
+  .cockpit-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cockpit-card {
+  background: #ffffff;
+  border: var(--brutal-border);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--brutal-shadow);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  margin-bottom: 12px;
+  border-bottom: var(--brutal-border);
+}
+
+.card-title {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  color: var(--brutal-black);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-subtitle {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--brutal-text-secondary);
+  text-transform: uppercase;
+}
+
+/* Tab Switcher */
+.tab-switcher {
+  display: flex;
+  border: var(--brutal-border);
+}
+
+.tab-btn {
+  background: #ffffff;
+  border: none;
+  border-right: var(--brutal-border-thin);
+  color: var(--brutal-black);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn.active {
+  background: var(--brutal-black);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   Camera & Bitewing Dual HUD
+   ========================================================================== */
+.hud-viewports {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  flex: 1;
+  min-height: 250px;
+}
+
+.hud-viewport-single {
+  grid-template-columns: 1fr;
+}
+
+.hud-panel {
+  position: relative;
+  background: #ffffff;
+  border: var(--brutal-border);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hud-panel.alert {
+  border-color: var(--brutal-alert);
+}
+
+.hud-svg-container {
+  width: 100%;
+  height: 100%;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fdfdfc;
+}
+
+.hud-tag-top {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hud-tag {
+  background: #ffffff;
+  border: var(--brutal-border-thin);
+  padding: 2px 6px;
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--brutal-black);
+  box-shadow: 1px 1px 0px #000;
+}
+
+.hud-alert-banner {
+  position: absolute;
+  bottom: 8px;
+  left: 8px;
+  right: 8px;
+  background: var(--brutal-alert);
+  border: var(--brutal-border);
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 900;
+  color: #ffffff;
+  text-transform: uppercase;
+  box-shadow: 2px 2px 0px #000;
+}
+
+.hud-footer {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: var(--brutal-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brutal-text-secondary);
+}
+
+/* ==========================================================================
+   Verification Gate Card
+   ========================================================================== */
+.gate-checks-list {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 4px;
+  max-height: 320px;
+}
+
+.gate-check-row {
+  padding: 8px 10px;
+  border: var(--brutal-border-thin);
+  background: #ffffff;
+  font-size: 11px;
+}
+
+.gate-check-row.pass {
+  border-left: 4px solid var(--brutal-black);
+}
+
+.gate-check-row.fail {
+  border-left: 4px solid var(--brutal-alert);
+  background: #fffafa;
+}
+
+.gate-check-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-weight: 800;
+  font-family: var(--font-mono);
+  text-transform: uppercase;
+  color: var(--brutal-black);
+}
+
+.gate-badge {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  padding: 1px 5px;
+  border: var(--brutal-border-thin);
+  font-weight: 900;
+}
+
+.gate-badge-pass {
+  background: var(--brutal-black);
+  color: #ffffff;
+}
+
+.gate-badge-fail {
+  background: var(--brutal-alert);
+  color: #ffffff;
+}
+
+.gate-check-desc {
+  font-size: 11px;
+  color: var(--brutal-text-secondary);
+  margin-top: 2px;
+}
+
+.gate-check-detail {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brutal-black);
+  margin-top: 3px;
+}
+
+.gate-check-citation {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--brutal-accent);
+  margin-top: 2px;
+}
+
+.gate-footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: var(--brutal-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gate-btn {
+  background: var(--brutal-black);
+  color: #ffffff;
+  border: var(--brutal-border);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 8px 14px;
+  cursor: pointer;
+  box-shadow: var(--brutal-shadow-sm);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.gate-btn:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: var(--brutal-shadow);
+}
+
+.gate-btn:disabled {
+  background: var(--brutal-surface-subtle);
+  color: var(--brutal-text-muted);
+  border: var(--brutal-border-thin);
+  cursor: default;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   GentesBot Drawer & Voice Stream
+   ========================================================================== */
+.quick-prompts-row {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 6px;
+}
+
+.quick-prompt-chip {
+  background: #ffffff;
+  border: var(--brutal-border-thin);
+  color: var(--brutal-black);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 8px;
+  cursor: pointer;
+  white-space: nowrap;
+  max-width: 220px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: uppercase;
+}
+
+.quick-prompt-chip:hover {
+  background: var(--brutal-black);
+  color: #ffffff;
+  transform: translate(-1px, -1px);
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+.voice-chat-stream {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+  max-height: 270px;
+}
+
+.voice-msg {
+  display: flex;
+  flex-direction: column;
+  max-width: 90%;
+}
+
+.voice-msg.dentist {
+  align-self: flex-end;
+}
+
+.voice-msg.gentesbot {
+  align-self: flex-start;
+}
+
+.voice-msg-meta {
+  font-size: 9px;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--brutal-text-secondary);
+  margin-bottom: 2px;
+}
+
+.voice-bubble {
+  padding: 8px 10px;
+  border: var(--brutal-border-thin);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.voice-bubble.dentist {
+  background: var(--brutal-black);
+  color: #ffffff;
+  box-shadow: 2px 2px 0px rgba(0,0,0,0.3);
+}
+
+.voice-bubble.gentesbot {
+  background: #ffffff;
+  border: var(--brutal-border);
+  color: var(--brutal-black);
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+.voice-bubble.safety-alert {
+  background: #fff5f5;
+  border: 2px solid var(--brutal-alert);
+  color: var(--brutal-black);
+  box-shadow: 2px 2px 0px var(--brutal-alert);
+}
+
+.voice-input-form {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: var(--brutal-border);
+}
+
+.mic-toggle-btn {
+  width: 34px;
+  height: 34px;
+  background: #ffffff;
+  border: var(--brutal-border);
+  color: var(--brutal-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+.mic-toggle-btn.listening {
+  background: var(--brutal-alert);
+  color: #ffffff;
+}
+
+.voice-text-input {
+  flex: 1;
+  background: #ffffff;
+  border: var(--brutal-border);
+  padding: 6px 10px;
+  font-size: 11px;
+  color: var(--brutal-black);
+}
+
+.voice-send-btn {
+  background: var(--brutal-black);
+  color: #ffffff;
+  border: var(--brutal-border);
+  font-size: 11px;
+  font-weight: 800;
+  padding: 6px 12px;
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+/* SOAP Note Container */
+.soap-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 330px;
+  padding-right: 4px;
+}
+
+.soap-section {
+  background: #ffffff;
+  border: var(--brutal-border-thin);
+  padding: 8px 10px;
+}
+
+.soap-label {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--brutal-black);
+  margin-bottom: 2px;
+  border-bottom: 1px solid #000;
+  padding-bottom: 2px;
+}
+
+.soap-body {
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--brutal-text-secondary);
+  margin-top: 4px;
+}
+
+.cdt-codes-box {
+  background: #ffffff;
+  border: var(--brutal-border);
+  padding: 8px 10px;
+  box-shadow: var(--brutal-shadow-sm);
+}
+
+.cdt-code-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--brutal-surface-subtle);
+  border: 1px solid #000;
+  padding: 4px 6px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  margin-top: 4px;
+  font-weight: 700;
+}

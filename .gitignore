@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.uv/
+*.egg-info/
+
+# Node / frontend
+node_modules/
+ui/frontend/dist/
+ui/frontend/.vite/
+
+# Data (large / not committed — pointer files only)
+data/video/*
+!data/video/.gitkeep
+!data/video/pointer.json
+data/mri/*
+!data/mri/.gitkeep
+!data/mri/pointer.json
+data/annotations/*
+!data/annotations/.gitkeep
+data/runtime/*
+!data/runtime/.gitkeep
+
+# Secrets / env
+.env
+.env.*
+!.env.example
+*.key.json
+service-account*.json
+
+# Deploy-resource caches — machine-local pointers to already-deployed cloud
+# resources (Agent Runtime reasoning engine names), not source
+.deployed_root_agent.json
+.deployed_subagents.json
+
+# OS / editor
+.DS_Store
+.vscode/
+*.swp
+
+# Logs
+*.log
+
+# Working docs stay local. Only the architecture exports are published — the
+# rest are build notes and run logs that would go stale in the repo.
+/docs/*
+!/docs/architecture/
+/initial_11082026.md

@@ -1,0 +1,877 @@
+/* SurgBot — new .sb__* classes only. Matches the existing dashboard's dark
+ * theme tokens (src/index.css's --surface-1, --page, --text-primary,
+ * --text-secondary, --text-muted, --border, --series-N custom properties)
+ * rather than inventing new colors. Visual spacing/sizing is loosely modeled
+ * on App.css's .aa__doc-section/.aa__btn (read-only reference). Entirely
+ * additive: nothing here selects or overrides .dashboard__grid or any
+ * existing tile class.
+ *
+ * Docked as a right-hand column (App.tsx's resizable/collapsible split) —
+ * earlier revision was a fixed bottom-right floating blob + popup panel,
+ * superseded once the dashboard made room for a dedicated rail. */
+
+.sb__rail {
+  height: 100vh;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  /* Same subtle radial-gradient wash as the homepage hero (home.css
+     .home__hero) — real user request to echo that treatment here. */
+  background:
+    radial-gradient(80% 60% at 85% 0%, rgba(89, 195, 230, 0.16), transparent 60%),
+    radial-gradient(60% 50% at 0% 20%, rgba(42, 120, 214, 0.1), transparent 60%),
+    var(--surface-1);
+  border-left: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--text-primary);
+  overflow: hidden;
+}
+
+.sb__content {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+/* Mirrors .dashboard__header/h1 (App.css) — same visual weight as the
+ * "SurgGraph" title on the other side of the split, always visible
+ * (intro and chat views alike), not just in the collapsed-strip label. */
+.sb__header {
+  display: flex;
+  align-items: center;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-1);
+  flex: 0 0 auto;
+}
+
+.sb__header-title {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sb__header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+
+.sb__header-tagline {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+@keyframes sb-fade {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* --- Collapsed reopen strip ------------------------------------------- */
+
+.sb__collapsed-strip {
+  height: 100vh;
+  width: 100%;
+  border: none;
+  border-left: 1px solid var(--border);
+  background: var(--surface-1);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 0;
+}
+.sb__collapsed-strip:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--series-1) 8%, var(--surface-1));
+}
+.sb__collapsed-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex: 0 0 auto;
+}
+.sb__collapsed-dot--connected-idle,
+.sb__collapsed-dot--listening { background: var(--status-good); }
+.sb__collapsed-dot--speaking { background: var(--series-5); animation: sb-fade 0.8s ease-in-out infinite; }
+.sb__collapsed-dot--connecting { background: var(--status-warning); animation: sb-fade 1s ease-in-out infinite; }
+.sb__collapsed-dot--error { background: var(--status-critical); }
+.sb__collapsed-label {
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.sb__collapsed-chevron {
+  font-size: 16px;
+}
+
+/* --- Intro (default) state --------------------------------------------- */
+
+.sb__intro {
+  flex: 1 1 auto;
+  padding: 18px 14px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+/* Subtle pastel blue-to-violet gradient hairline, in the vein of Google's
+ * own product borders — a translucent gradient (fading toward transparent)
+ * rather than a flat pastel hex so it reads correctly in both light and
+ * dark theme without a separate dark-mode override. */
+.sb__card {
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px 11px;
+  background:
+    linear-gradient(var(--page), var(--page)) padding-box,
+    linear-gradient(135deg, color-mix(in srgb, #7fb2ff 65%, transparent), color-mix(in srgb, #b28aff 55%, transparent)) border-box;
+}
+.sb__card-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  margin-bottom: 7px;
+}
+.sb__card-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sb__card-list li {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+/* Each agent/service gets its own small container instead of a flat
+ * stacked list — real user request, 2-column grid. */
+.sb__card-list--grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+}
+.sb__card-list--grid li {
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 6px 7px;
+}
+.sb__card-item-name {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sb__card-item-meta {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+.sb__card-examples {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sb__card-examples li {
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+/* --- Active chat state (was .sb__panel's inner content) ---------------- */
+
+.sb__chat {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sb__status-row {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+.sb__status-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  flex: 0 0 auto;
+}
+.sb__status-dot--connected { background: var(--status-good); }
+.sb__status-dot--connecting { background: var(--status-warning); }
+.sb__status-dot--disconnected { background: var(--status-critical); }
+
+.sb__stop-narration-btn,
+.sb__end-session-btn {
+  margin-left: auto;
+  flex: 0 0 auto;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--text-muted);
+  font-size: 10.5px;
+  font-family: inherit;
+  cursor: pointer;
+}
+/* Only .sb__end-session-btn should absorb the row's leftover space when
+ * both buttons are present — .sb__stop-narration-btn just sits next to it. */
+.sb__stop-narration-btn + .sb__end-session-btn {
+  margin-left: 0;
+}
+.sb__stop-narration-btn:hover {
+  border-color: var(--status-warning);
+  color: var(--status-warning);
+}
+.sb__end-session-btn:hover {
+  border-color: var(--status-critical);
+  color: var(--status-critical);
+}
+
+/* Vertical stepper — a horizontal row of 6 squeezed labels was illegible
+ * once this became a permanent narrow rail rather than a 400px popup; one
+ * row per phase reads clearly at any rail width. */
+.sb__stepper {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 9px 12px;
+  margin: 0;
+  list-style: none;
+  border-bottom: 1px solid var(--border);
+}
+.sb__step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 1px 0;
+  border-radius: 6px;
+  color: var(--text-muted);
+}
+.sb__step-num {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+.sb__step-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 12px;
+  text-align: left;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sb__step--past .sb__step-num {
+  border-color: var(--series-3);
+  color: var(--series-3);
+}
+.sb__step--current {
+  color: var(--text-primary);
+}
+.sb__step--current .sb__step-num {
+  background: var(--series-1);
+  border-color: var(--series-1);
+  color: #fff;
+}
+
+.sb__feed {
+  flex: 1 1 auto;
+  min-height: 120px;
+  overflow-y: auto;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sb__feed-empty {
+  color: var(--text-muted);
+  font-size: 12.5px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.sb__turn {
+  /* Capped so bubbles still read as a chat once the rail is expanded wide
+     (real user report: bubbles grew to ~70% of a fully-expanded panel) —
+     a floor keeps them from getting unreadably narrow in the default,
+     much-narrower docked width. */
+  max-width: clamp(220px, 50%, 640px);
+  padding: 6px 10px;
+  border-radius: 12px;
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.sb__turn--user {
+  align-self: flex-end;
+  background: var(--series-1);
+  color: #fff;
+  border-bottom-right-radius: 3px;
+}
+.sb__turn--model {
+  align-self: flex-start;
+  background: var(--page);
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  border-bottom-left-radius: 3px;
+}
+.sb__turn-cursor {
+  display: inline-block;
+  margin-left: 2px;
+  opacity: 0.6;
+  animation: sb-fade 0.9s ease-in-out infinite;
+}
+
+/* Tool/agent-use disclosure chip — every row MUST show both the agent name
+ * and the model/API surface (never one without the other); a missing field
+ * from the backend renders as the literal word "unknown" rather than being
+ * silently dropped. */
+.sb__tool-chip {
+  align-self: center;
+  max-width: 96%;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 9px;
+  border-radius: 8px;
+  border: 1px dashed var(--border);
+  background: color-mix(in srgb, var(--series-7) 10%, var(--surface-1));
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  /* Now a real <button> (click to expand/collapse the summary) — reset the
+     native button chrome back to the chip's own pill styling. */
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sb__tool-chip:hover {
+  border-color: var(--series-7);
+}
+.sb__tool-chip--in_progress {
+  border-style: solid;
+  border-color: var(--series-4);
+}
+.sb__tool-chip-agent {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sb__tool-chip-sep {
+  color: var(--text-muted);
+}
+.sb__tool-chip-model {
+  font-family: var(--font-mono);
+  color: var(--series-7);
+}
+.sb__tool-chip-tool {
+  color: var(--text-muted);
+}
+.sb__tool-chip-tool::before {
+  content: "· ";
+}
+/* Real user report: easy to miss while scanning a busy feed — weight +
+   a pulse (same sb-fade animation already used for other live states)
+   instead of a static italic label. */
+.sb__tool-chip-state {
+  color: var(--status-warning);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  animation: sb-fade 1s ease-in-out infinite;
+}
+/* Real user report: long unbroken tokens (case ids, etc.) could overflow
+   past the chip's edge instead of wrapping. Collapsed by default (2 lines)
+   so a long summary doesn't dominate the feed; the chip is a full button —
+   click anywhere on it to see the rest. */
+.sb__tool-chip-summary {
+  width: 100%;
+  color: var(--text-secondary);
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.sb__tool-chip--expanded .sb__tool-chip-summary {
+  -webkit-line-clamp: unset;
+  overflow: visible;
+}
+
+/* Real user report: a crash mid-conversation used to wipe everything on
+ * reconnect. Now the transcript above is left exactly as it was, and this
+ * prompt is the only thing asking for a real click before continuing. */
+.sb__reconnect-prompt {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 14px;
+  border-top: 1px solid var(--status-critical);
+  background: color-mix(in srgb, var(--status-critical) 10%, var(--surface-1));
+}
+.sb__reconnect-text {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.sb__fallback {
+  flex: 0 0 auto;
+  border-top: 1px solid var(--border);
+  padding: 6px 12px;
+}
+.sb__fallback-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11.5px;
+  cursor: pointer;
+  padding: 2px 0;
+  text-decoration: underline;
+}
+.sb__fallback-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+.sb__fallback-input {
+  flex: 1 1 auto;
+  padding: 5px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-family: inherit;
+}
+
+.sb__btn {
+  padding: 4px 9px;
+  border-radius: 3px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--text-secondary);
+  font-size: 11.5px;
+  font-family: inherit;
+  cursor: pointer;
+}
+.sb__btn:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+}
+.sb__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.sb__btn--primary {
+  background: var(--series-1);
+  border-color: var(--series-1);
+  color: #fff;
+  font-weight: 600;
+}
+.sb__btn--primary:hover:not(:disabled) {
+  filter: brightness(1.1);
+  color: #fff;
+}
+.sb__btn--danger {
+  border-color: var(--status-critical);
+  color: var(--status-critical);
+}
+.sb__btn--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--status-critical) 12%, var(--page));
+}
+
+/* Phase 5 review document — rendered inline in the chat feed like a shared
+ * file bubble (real user report: a fixed block pinned below the feed ate a
+ * lot of vertical space and blocked chatting past it). Collapsed by default;
+ * the header is a real <button> that expands/collapses the body. */
+.sb__doc-artifact {
+  /* flex: 0 0 auto is load-bearing, not decorative: this is a flex item
+     inside .sb__feed's column layout, and `overflow: hidden` (below, to
+     clip the rounded corners) disables flexbox's "automatic minimum size"
+     protection — without an explicit flex-basis, the item could be
+     flex-shrunk down to a few px tall instead of its real content height. */
+  flex: 0 0 auto;
+  align-self: flex-start;
+  width: 100%;
+  max-width: min(96%, 640px);
+  border: 1px solid transparent;
+  border-radius: 12px;
+  background:
+    linear-gradient(var(--page), var(--page)) padding-box,
+    linear-gradient(135deg, color-mix(in srgb, #7fb2ff 65%, transparent), color-mix(in srgb, #b28aff 55%, transparent)) border-box;
+  overflow: hidden;
+}
+.sb__doc-artifact-header {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.sb__doc-artifact-header:hover {
+  background: color-mix(in srgb, var(--series-1) 6%, transparent);
+}
+.sb__doc-artifact-title {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.sb__doc-artifact-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.sb__doc-artifact-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+.sb__doc-artifact-chevron {
+  flex: 0 0 auto;
+  color: var(--text-muted);
+  font-size: 11px;
+}
+.sb__doc-artifact-body {
+  border-top: 1px solid var(--border);
+  padding: 10px 12px;
+  max-height: 50vh;
+  overflow-y: auto;
+}
+.sb__review-status {
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+}
+.sb__review-status--approved,
+.sb__review-status--edited {
+  color: var(--status-good);
+  border-color: var(--status-good);
+}
+.sb__review-status--rejected,
+.sb__review-status--blocked {
+  color: var(--status-critical);
+  border-color: var(--status-critical);
+}
+.sb__review-status--pending,
+.sb__review-status--drafting {
+  color: var(--status-warning);
+  border-color: var(--status-warning);
+}
+
+.sb__review-empty {
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+.sb__review-sections {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sb__review-section-label {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 2px;
+}
+.sb__review-text {
+  color: var(--text-secondary);
+  white-space: pre-wrap;
+}
+.sb__review-textarea {
+  width: 100%;
+  min-height: 64px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--page);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 12.5px;
+  resize: vertical;
+}
+
+.sb__review-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
+.sb__review-resolved {
+  margin-top: 8px;
+  font-size: 11.5px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+.sb__review-error {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: var(--status-critical);
+}
+
+/* --- The living voice orb ----------------------------------------------
+ * Technique adapted from a real reference implementation (SmoothUI's
+ * SiriOrb — github.com/educlopez/smoothui, packages/smoothui/components/
+ * siri-orb/index.tsx): several conic-gradients, each centered at a
+ * different point and rotating at a different multiple/direction of one
+ * shared angle, layered and blurred so they read as drifting organic blobs
+ * of color rather than a flat pie-chart gradient. A glossy sheen (drifting
+ * radial highlight) and an inset "rim" (lit top edge, shaded bottom) sell
+ * the sphere illusion; an outer blurred glow reacts to state. Everything is
+ * driven by CSS classes only (sb__orb--${orbState}, computed from real
+ * connection/listening/speaking signals in SurgBotPanel.tsx) — no canvas,
+ * no per-frame JS, no fabricated "activity" the orb doesn't actually have. */
+
+@property --sb-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+.sb__orb-dock {
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 14px 24px;
+  border-top: 1px solid var(--border);
+  /* Same size before and after a session starts — real user report: the
+     idle orb used to be noticeably larger (108px) than the in-chat one
+     (56px), an inconsistency with no functional reason. */
+  --sb-orb-size: 56px;
+}
+.sb__orb-dock--compact {
+  padding: 10px 14px 14px;
+  --sb-orb-size: 56px;
+}
+
+.sb__orb-btn {
+  border: none;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  border-radius: 50%;
+  /* Press-and-hold-to-talk (real user report): without this, touch devices
+     treat a held-down pointer as a scroll/zoom gesture and can fire
+     pointercancel before the user actually releases. */
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.sb__orb-btn:focus-visible {
+  outline: 2px solid var(--series-1);
+  outline-offset: 6px;
+}
+
+.sb__orb {
+  position: relative;
+  display: block;
+  width: var(--sb-orb-size);
+  height: var(--sb-orb-size);
+  transition: transform 0.2s ease;
+}
+.sb__orb-btn:hover .sb__orb {
+  transform: scale(1.04);
+}
+
+.sb__orb-glow {
+  position: absolute;
+  inset: -24%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--series-1) 0%, transparent 65%);
+  filter: blur(calc(var(--sb-orb-size) * 0.2));
+  opacity: 0.32;
+  transition: opacity 0.4s ease, background 0.4s ease;
+  pointer-events: none;
+}
+
+.sb__orb-core {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    conic-gradient(from calc(var(--sb-angle) * 2) at 26% 70%, var(--series-7), transparent 25% 75%, var(--series-7)),
+    conic-gradient(from calc(var(--sb-angle) * -1.6) at 74% 76%, var(--series-1), transparent 30% 70%, var(--series-1)),
+    conic-gradient(from calc(var(--sb-angle) * 1.3) at 80% 22%, var(--series-5), transparent 30% 70%, var(--series-5)),
+    conic-gradient(from calc(var(--sb-angle) * -2) at 20% 18%, var(--series-3), transparent 30% 70%, var(--series-3)),
+    #0b0b14;
+  /* Lighter/pastel overall than the original vivid gradient — real user
+     request; idle goes further still, see .sb__orb--idle below. */
+  filter: blur(calc(var(--sb-orb-size) * 0.09)) saturate(0.85) contrast(0.95) brightness(1.15);
+  animation: sb-orb-rotate 14s linear infinite;
+}
+
+.sb__orb-sheen {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(255, 255, 255, 0.5), transparent 34%),
+    radial-gradient(circle at 72% 78%, rgba(255, 255, 255, 0.12), transparent 48%);
+  mix-blend-mode: screen;
+  animation: sb-orb-drift 9s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+.sb__orb-rim {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.18),
+    inset 0 6px 12px rgba(255, 255, 255, 0.2),
+    inset 0 -8px 16px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+}
+
+.sb__orb-caption {
+  font-size: 12px;
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+@keyframes sb-orb-rotate {
+  to { --sb-angle: 360deg; }
+}
+@keyframes sb-orb-drift {
+  0% { transform: translate(-5%, -4%) scale(1.05); }
+  100% { transform: translate(6%, 5%) scale(1.12); }
+}
+
+/* idle: slow, shallow "breathing" — never draws attention on its own.
+   Noticeably lighter/more pastel than every other state (still moving,
+   just quieter) — real user request. */
+.sb__orb--idle {
+  animation: sb-orb-breathe 5.5s ease-in-out infinite;
+}
+.sb__orb--idle .sb__orb-core {
+  filter: blur(calc(var(--sb-orb-size) * 0.09)) saturate(0.5) contrast(0.85) brightness(1.35);
+}
+.sb__orb--idle .sb__orb-glow {
+  opacity: 0.2;
+}
+@keyframes sb-orb-breathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.035); }
+}
+
+.sb__orb--connecting .sb__orb-core {
+  animation-duration: 4s;
+}
+.sb__orb--connecting .sb__orb-glow {
+  opacity: 0.5;
+  animation: sb-orb-pulse-opacity 1s ease-in-out infinite;
+}
+@keyframes sb-orb-pulse-opacity {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.6; }
+}
+
+.sb__orb--listening {
+  animation: sb-orb-listen-pulse 1.6s ease-in-out infinite;
+}
+.sb__orb--listening .sb__orb-core {
+  animation-duration: 6s;
+}
+.sb__orb--listening .sb__orb-glow {
+  opacity: 0.55;
+  background: radial-gradient(circle, var(--series-3) 0%, transparent 65%);
+}
+@keyframes sb-orb-listen-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+.sb__orb--speaking {
+  animation: sb-orb-speak-pulse 0.85s ease-in-out infinite;
+}
+.sb__orb--speaking .sb__orb-core {
+  animation-duration: 2.4s;
+  filter: blur(calc(var(--sb-orb-size) * 0.09)) saturate(1.8) contrast(1.2);
+}
+.sb__orb--speaking .sb__orb-glow {
+  opacity: 0.7;
+  background: radial-gradient(circle, var(--series-5) 0%, transparent 65%);
+  animation: sb-orb-pulse-opacity 0.7s ease-in-out infinite;
+}
+@keyframes sb-orb-speak-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.09); }
+}
+
+.sb__orb--connected-idle .sb__orb-core {
+  animation-duration: 16s;
+}
+
+.sb__orb--error .sb__orb-core {
+  filter: blur(calc(var(--sb-orb-size) * 0.09)) saturate(0.3) contrast(1.1) grayscale(0.5);
+  animation-play-state: paused;
+}
+.sb__orb--error .sb__orb-glow {
+  background: radial-gradient(circle, var(--status-critical) 0%, transparent 65%);
+  opacity: 0.5;
+}
+.sb__orb--error {
+  animation: sb-orb-shake 0.18s ease-in-out;
+}
+@keyframes sb-orb-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  75% { transform: translateX(3px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sb__orb,
+  .sb__orb-core,
+  .sb__orb-sheen {
+    animation: none !important;
+  }
+}

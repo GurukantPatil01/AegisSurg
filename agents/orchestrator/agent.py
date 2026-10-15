@@ -1,0 +1,511 @@
+"""Orchestrator — the root ADK agent (plan §5.2 item 1: "receives video,
+opens the case, dispatches sub-agents, owns the state machine").
+
+The trigger is a single HTTP call (services/orchestrator_service's POST
+/cases/open), fired by the frontend on the FIRST time the user presses play
+on the video — not page load, not every subsequent play/pause toggle (plan
+§11, revised after discussion: page load alone doesn't represent the user
+actually starting the workflow). Every call mints a brand-new case_id — no
+get-or-create, no shared state between concurrent users — so this module's
+job is "given a fresh case_id and a video_id, run the real pipeline."
+
+Once triggered, the pipeline runs independently of the video's own
+play/pause state — there is no artificial gating tying agent computation to
+video playback position. Real Gemini analysis latency (confirmed this
+session: ~163s median per 10s-of-video window) is far slower than the
+video's own real-time duration, so any strict "agents never compute ahead
+of playback position" model would force the video itself to play in bursts
+disconnected from smooth playback — rejected as incompatible with a
+coherent live demo. Agents simply compute as fast as they genuinely can and
+write real results to the graph as they land; the video plays normally.
+
+Today, Error Detection is the only real agent that exists — `sub_agents` wraps its
+real ADK coordinator so Registry/Observability tooling sees a genuine
+child, structured to extend as further agents get
+built (append to the list, not a rewrite).
+
+The heavy lifting lives in the plain async open_case() function, mirroring
+the pattern already established for Error Detection (agents/error_detection/agent.py's
+error_detection_case is "what Orchestrator calls" — this module is what actually
+calls it): OrchestratorAgent._run_async_impl is a thin ADK-flow adapter,
+not where the real logic lives — matching ErrorDetectionCoordinatorAgent's own
+docstring rationale for the same split.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import logging
+from typing import AsyncGenerator
+
+from google.adk.agents import BaseAgent, LlmAgent
+from google.adk.agents.invocation_context import InvocationContext
+from google.adk.events import Event
+from google.genai import types
+from pydantic import BaseModel
+
+from agents.error_detection.agent import SUB_AGENT_LABELS, error_detection_case
+from agents.complication_reasoning import agent as complication_reasoning
+from agents.corrective_replanning import agent as corrective_replanning
+from agents.alert_routing import agent as alert_routing
+from agents.divergence_detection import agent as divergence_detection
+from agents.documentation.agent import draft_note
+from agents.error_detection.coordinator import ErrorDetectionCoordinatorAgent
+from agents.perception.agent import perception_case
+from agents.perception.subagent import build_subagent as build_perception_subagent
+from state import event_bus, node_ids
+from state.schema import DivergenceEvent, GraphEdgePatch, GraphNodePatch
+from tools.adk_runner import run_llm_agent_once
+from tools.gemini_model import new_agent_model
+from tools.patient_twin import load_patient_twin, patient_twin_attrs
+from tools.state_tools import apply_state_patches
+from tools.video_utils import SWEEP_END_S, SWEEP_START_S, find_video_duration_s, format_video_time_range
+
+# Real, fixed pipeline structure (not decorative) — Orchestrator dispatches
+# exactly these three agents; Error Detection Coordinator owns exactly these three
+# sub-agents (its real ADK sub_agents, agents/error_detection/coordinator.py).
+# Labels here must match each agent's own internal registration exactly
+# (agents/scene_graph_builder/agent.py::_ensure_agent_node,
+# each agent's own _ensure_agent_node) — both write the same
+# node_id, so a mismatch would just show as a harmless but confusing label
+# flicker once the redundant internal call lands.
+# Anticipation is deliberately NOT dispatched: docs/agentic_workflow.md's
+# roster has no card for it. Its code still exists under agents/anticipation/
+# and is not deleted — two places will need revisiting if it returns, namely
+# that doc's "three long-running sweeps" line and plan_v2 §6 step 11's
+# anticipation next-phase accuracy in the Benchmark Agent.
+_TOP_LEVEL_AGENTS = (
+    ("agent:error_detection_coordinator", "error_detection_coordinator", "Error Detection Coordinator"),
+    ("agent:perception", "perception", "Perception Agent"),
+    # Event-driven, not swept: these do not run on a cadence, they wake when a
+    # qualifying node lands on the graph. They are still drawn in the static
+    # skeleton so their output has somewhere to hang from the moment it exists
+    # — an agent node created lazily on first use leaves everything it produced
+    # unreachable from the trigger until then.
+    ("agent:complication_reasoning", "complication_reasoning", "Complication Reasoning"),
+    ("agent:literature_retrieval", "literature_retrieval", "Literature Retrieval"),
+    ("agent:corrective_replanning", "corrective_replanning", "Corrective Replanning"),
+    ("agent:divergence_detection", "divergence_detection", "Divergence Detection"),
+    ("agent:alert_routing", "alert_routing", "Alert Routing"),
+    ("agent:verification_gate", "verification_gate", "Verification Gate"),
+)
+
+logger = logging.getLogger(__name__)
+
+
+class _PrimeOutput(BaseModel):
+    ready: bool
+
+
+# One throwaway LlmAgent, built once at import — same real model/location
+# (tools.gemini_model.new_agent_model, the `global`-location GlobalGemini
+# wrapper) every real sweep agent uses, so the prime call exercises the same
+# real serving path rather than a different endpoint that wouldn't warm
+# anything relevant.
+_PRIME_AGENT = LlmAgent(
+    name="orchestrator_prime",
+    model=new_agent_model(),
+    instruction="Reply with ready=true. Nothing else to do.",
+    output_schema=_PrimeOutput,
+)
+
+
+async def _prime_gemini(case_id: str) -> None:
+    """Fires one tiny real Gemini call before the real sweeps dispatch.
+
+    Real basis (docs/latency_optimization.md, third pass): 211 real calls in
+    one run had p50=6.7s but max=55.5s — a spread wide enough, on calls of
+    comparable real complexity, to be consistent with a cold-start tax on an
+    early call to a fresh serving path (Vertex AI Dynamic Shared Quota
+    admission/routing, TLS/channel setup) rather than call-to-call reasoning
+    difficulty. This fires one minimal real request through the identical
+    model/location config first, so by the time Error Detection and
+    Perception's sweeps make their own first real calls (moments later, via
+    asyncio.gather below), that cold path has already been paid for once.
+
+    Best-effort, never blocking: a warm-up call that errors, times out, or
+    is simply slow must never delay or fail the real sweep it exists to
+    help — caught and logged, same as every other non-critical failure path
+    in this module (docs/agentic_workflow.md §10)."""
+    try:
+        await run_llm_agent_once(
+            _PRIME_AGENT,
+            types.Content(role="user", parts=[types.Part(text="ping")]),
+            _PrimeOutput,
+            app_name="surggraph_prime",
+        )
+    except Exception:
+        logger.warning("case %s: prime call failed — sweeps proceed on a cold path", case_id, exc_info=True)
+
+
+async def _draw_static_hierarchy(case_id: str, start_s: float, end_s: float, video_id: str) -> None:
+    """Writes the ENTIRE static pipeline skeleton — trigger node, all 3
+    top-level agent nodes, Error Detection's 3 sub-agent nodes, and every hierarchy
+    edge between them — sequentially, right here, before any agent sweep
+    (and therefore any real Gemini call) has been kicked off.
+
+    Real bug this fixes: each agent's own internal registration call
+    (agents/error_detection/agent.py::_ensure_agent_nodes, scene_graph_builder's/
+    each agent's own _ensure_agent_node) IS correct and IS the first line
+    of its own sweep — but once dozens of concurrent Gemini calls are in
+    flight, those tiny, cheap registration writes (dispatched via
+    asyncio.to_thread, sharing Python's default thread pool with whatever
+    the Gemini SDK's own blocking I/O uses) can get starved behind
+    minutes of long-running Gemini calls queued ahead of them. Confirmed
+    directly from real Firestore timestamps this session: an "agent:
+    error_detection_temporal -> " hierarchy edge landed nearly 3 minutes after the
+    case opened, even though the code that writes it is the literal first
+    line of error_detection_case(). Drawing the static skeleton HERE, before
+    asyncio.gather kicks off any sweep, means it's written while the
+    thread pool is still empty — fast and reliable regardless of how busy
+    the pool gets once the real per-window work starts.
+
+    Each agent's own internal registration call still runs too (harmless,
+    idempotent re-writes of the same content) — this function doesn't
+    replace that, it just guarantees the skeleton doesn't have to wait for
+    it."""
+    trigger_node_id = node_ids.trigger(case_id)
+    patient_twin_node_id = node_ids.patient_twin()
+    profile = load_patient_twin()
+
+    patches: list[tuple] = [
+        (
+            GraphNodePatch(
+                node_id=trigger_node_id,
+                node_type="trigger",
+                label=f"Autonomous workflow triggered ({format_video_time_range(start_s, end_s)})",
+                attrs={"video_id": video_id},
+                source_agent="orchestrator",
+                source_tool="open_case",
+            ),
+            None,
+            "Case opened — user pressed play, autonomous pipeline started",
+        ),
+        # The patient twin is part of the static skeleton (docs/plan_v2 §6
+        # step 1): complication reasoning needs it in its context slice the
+        # moment the first error fires, and by then the thread pool is
+        # saturated with Gemini calls.
+        (
+            GraphNodePatch(
+                node_id=patient_twin_node_id,
+                node_type="patient_twin",
+                label=f"{profile['display_name']} (synthetic)",
+                attrs=patient_twin_attrs(profile),
+                source_agent="orchestrator",
+                source_tool="open_case",
+            ),
+            None,
+            "Synthetic patient profile loaded for this case",
+        ),
+        (
+            None,
+            GraphEdgePatch(
+                edge_id=node_ids.edge(trigger_node_id, patient_twin_node_id, "hierarchy"),
+                source_node_id=trigger_node_id,
+                target_node_id=patient_twin_node_id,
+                edge_kind="hierarchy",
+                source_agent="orchestrator",
+                source_tool="open_case",
+                reason="Synthetic patient profile loaded for this case",
+            ),
+            "Synthetic patient profile loaded for this case",
+        ),
+    ]
+
+    for target_agent_node_id, target_agent_name, target_agent_label in _TOP_LEVEL_AGENTS:
+        patches.append(
+            (
+                GraphNodePatch(
+                    node_id=target_agent_node_id,
+                    node_type="agent",
+                    label=target_agent_label,
+                    source_agent=target_agent_name,
+                    source_tool="open_case",
+                ),
+                None,
+                f"{target_agent_name} registered for this case",
+            )
+        )
+        patches.append(
+            (
+                None,
+                GraphEdgePatch(
+                    edge_id=node_ids.edge(trigger_node_id, target_agent_node_id, "hierarchy"),
+                    source_node_id=trigger_node_id,
+                    target_node_id=target_agent_node_id,
+                    edge_kind="hierarchy",
+                    source_agent="orchestrator",
+                    source_tool="open_case",
+                    reason=f"Orchestrator dispatched {target_agent_name}",
+                ),
+                f"Orchestrator dispatched {target_agent_name}",
+            )
+        )
+
+    coordinator_node_id = node_ids.agent("error_detection_coordinator")
+
+    # The consensus step the three role sub-agents feed into. Drawn here with
+    # everything else so the edges into and out of it can never precede it.
+    aggregation_node_id = node_ids.agent("error_detection_aggregation")
+    patches.append(
+        (
+            GraphNodePatch(
+                node_id=aggregation_node_id,
+                node_type="agent",
+                label="Weighted Aggregation (≥2-of-3)",
+                attrs={
+                    "role": "deterministic_consensus",
+                    "note": (
+                        "Weighted sum of the three role sub-agents' independent calls; at least two of "
+                        "three must clear the threshold before an error fires. No model call."
+                    ),
+                },
+                source_agent="error_detection_aggregation",
+                source_tool="open_case",
+            ),
+            None,
+            "Weighted aggregation step registered for this case",
+        )
+    )
+    patches.append(
+        (
+            None,
+            GraphEdgePatch(
+                edge_id=node_ids.edge(coordinator_node_id, aggregation_node_id, "hierarchy"),
+                source_node_id=coordinator_node_id,
+                target_node_id=aggregation_node_id,
+                edge_kind="hierarchy",
+                source_agent="error_detection_coordinator",
+                source_tool="open_case",
+                reason="Error Detection Coordinator owns the aggregation step",
+            ),
+            "Error Detection Coordinator owns the aggregation step",
+        )
+    )
+
+    for sub_node_id, sub_label in SUB_AGENT_LABELS.items():
+        if sub_node_id == "error_detection_coordinator":
+            continue
+        sub_agent_node_id = node_ids.agent(sub_node_id)
+        patches.append(
+            (
+                GraphNodePatch(
+                    node_id=sub_agent_node_id,
+                    node_type="agent",
+                    label=sub_label,
+                    source_agent=sub_node_id,
+                    source_tool="open_case",
+                ),
+                None,
+                f"{sub_label} registered for this case",
+            )
+        )
+        patches.append(
+            (
+                None,
+                GraphEdgePatch(
+                    edge_id=node_ids.edge(coordinator_node_id, sub_agent_node_id, "hierarchy"),
+                    source_node_id=coordinator_node_id,
+                    target_node_id=sub_agent_node_id,
+                    edge_kind="hierarchy",
+                    source_agent="error_detection_coordinator",
+                    source_tool="open_case",
+                    reason=f"Error Detection Coordinator owns {sub_label}",
+                ),
+                f"Error Detection Coordinator owns {sub_label}",
+            )
+        )
+
+    # ONE batched write for the whole skeleton. Previously these went out
+    # individually, and since writes to a case serialize at roughly a second
+    # each, the skeleton trickled onto the screen over ~15 seconds — the very
+    # first thing a viewer sees, arriving slowly. Nodes precede the edges that
+    # reference them in the list, and the store assigns consecutive seqs in
+    # list order, so no edge can land before its endpoints.
+    await apply_state_patches(case_id, patches)
+
+
+async def open_case(
+    case_id: str, video_id: str, start_s: float | None = None, end_s: float | None = None
+) -> list[DivergenceEvent]:
+    """Orchestrator's actual work for opening a case: emits a real
+    "workflow triggered" node (the honest marker of the moment the user
+    pressed play — not fabricated, not a fake progress indicator), then
+    runs Error Detection's live detection and Perception's live
+    entity/relation/activity sweep over `video_id`, concurrently. `start_s`/`end_s`
+    default to the video's own real full duration
+    (docs/latency_optimization.md: "entire video's inference", not one
+    bounded demo window) — `find_video_duration_s` reads this from the
+    actual source file, never assumed.
+
+    Concurrent, not sequential: real measured latency makes running
+    independent agents back-to-back a real, unjustified multiplication of
+    demo wait time — they write independent nodes/edges to the same graph."""
+    # An explicit argument always wins. Otherwise fall back to the configured
+    # development bounds (tools/video_utils.SWEEP_START_S/SWEEP_END_S), and
+    # only then to the video's own real duration.
+    if start_s is None:
+        start_s = SWEEP_START_S if SWEEP_START_S is not None else 0.0
+    if end_s is None:
+        end_s = SWEEP_END_S
+    if end_s is None:
+        end_s = find_video_duration_s(video_id)
+        if end_s is None:
+            raise ValueError(f"no source video found for {video_id!r} — cannot derive real duration to sweep")
+    else:
+        # Never let a configured bound run past the real end of the video.
+        real_duration = find_video_duration_s(video_id)
+        if real_duration is not None:
+            end_s = min(end_s, real_duration)
+
+    if SWEEP_END_S is not None:
+        logger.warning(
+            "case %s sweeping a BOUNDED range %.0f-%.0fs (SURGGRAPH_SWEEP_END_S is set) — not the full video",
+            case_id,
+            start_s,
+            end_s,
+        )
+
+    # Concurrent, not sequential: the skeleton write is Firestore-only, the
+    # prime call is Gemini-only — genuinely independent work, no reason to
+    # pay both latencies back to back. Skeleton lands on the graph fast
+    # either way; the prime call's real point is finishing (or at least
+    # having been dispatched) before the two big sweeps make their own first
+    # real calls a few lines down.
+    await asyncio.gather(
+        _draw_static_hierarchy(case_id, start_s, end_s, video_id),
+        _prime_gemini(case_id),
+    )
+
+    # Register the event-driven agents BEFORE any sweep starts. The bus is the
+    # only thing that wakes them (docs/agentic_workflow.md §7): they do not
+    # poll, so an error node written before a subscription exists is simply
+    # never reasoned about. Subscribing after dispatch would drop exactly the
+    # early errors a fast sweep produces first.
+    bus = event_bus.get_bus(case_id)
+    complication_reasoning.subscribe(bus)
+    corrective_replanning.subscribe(bus)
+    divergence_detection.subscribe(bus)
+    alert_routing.subscribe(bus)
+
+    try:
+        divergences, _perception_state = await asyncio.gather(
+            error_detection_case(case_id, video_id, start_s=start_s, end_s=end_s),
+            perception_case(case_id, video_id, start_s=start_s, end_s=end_s),
+        )
+        # The sweeps are done, but an event-driven handler fired by the last
+        # error may still be mid-flight — a complication reasoning pass is two
+        # Gemini calls and a network fetch. Draining here is what keeps its
+        # output in the case instead of being cancelled on the way out.
+        # The drain budget must cover a divergence monitor's full polling
+        # window, or the last proposal made in a case gets cancelled before
+        # it can ever report — which would silently lose exactly the
+        # divergences that matter most, the late ones.
+        #
+        # A REAL status write, not a fake progress bar: this wait is genuine
+        # (up to MAX_POLLS*POLL_INTERVAL_S+30 real seconds) and, until this
+        # write existed, produced zero visible activity anywhere in the UI —
+        # the last thing on screen was the final divergence alert, then
+        # silence, then "Preparing operative report…" appeared out of
+        # nowhere a minute-plus later. Landing on the documentation node's
+        # own id so draft_note()'s first write naturally supersedes it the
+        # moment drafting actually starts.
+        documentation_node_id = node_ids.documentation(case_id)
+        trigger_node_id = node_ids.trigger(case_id)
+        await apply_state_patches(
+            case_id,
+            [
+                (
+                    GraphNodePatch(
+                        node_id=documentation_node_id,
+                        node_type="documentation",
+                        label="Wrapping up in-flight reasoning before drafting the operative report…",
+                        attrs={"approval_status": "closing_out"},
+                        source_agent="orchestrator",
+                        source_tool="open_case",
+                    ),
+                    None,
+                    "Waiting for in-flight divergence monitoring to finish before closing out the case",
+                ),
+                # Otherwise orphaned: nothing else ever draws an edge INTO the
+                # operative record, so without this it sits disconnected from
+                # the case's own skeleton (the trigger node everything else
+                # hangs off) for its entire lifetime, drafting through filed.
+                (
+                    None,
+                    GraphEdgePatch(
+                        edge_id=node_ids.edge(trigger_node_id, documentation_node_id, "hierarchy"),
+                        source_node_id=trigger_node_id,
+                        target_node_id=documentation_node_id,
+                        edge_kind="hierarchy",
+                        source_agent="orchestrator",
+                        source_tool="open_case",
+                        reason="The operative record is part of this triggered case",
+                    ),
+                    "The operative record is part of this triggered case",
+                ),
+            ],
+        )
+
+        await bus.drain(timeout_s=divergence_detection.MAX_POLLS * divergence_detection.POLL_INTERVAL_S + 30)
+
+        # Post-case: the case documents itself. Self-benchmarking
+        # (agents/benchmark/agent.py::benchmark_case) is intentionally not
+        # called here — disabled as a functional step, not deleted, in case
+        # it's wanted again later. It used to run here concurrently with
+        # documentation (decoupled from it: system_performance was dropped
+        # from the note specifically so documentation never depended on
+        # anything benchmark_case writes, see agents/documentation/
+        # subagent.py) — that decoupling is exactly why removing it here is
+        # a clean subtraction rather than a rewire.
+        async def _run_documentation() -> None:
+            try:
+                await draft_note(case_id)
+            except Exception:
+                logger.exception("case %s: drafting failed — the case still closes", case_id)
+
+        await _run_documentation()
+    finally:
+        await event_bus.close_bus(case_id)
+
+    return divergences
+
+
+class OrchestratorAgent(BaseAgent):
+    """Real ADK BaseAgent — root of the agent topology. `sub_agents` is
+    declared for Registry/Observability visibility, matching the pattern
+    already established by ErrorDetectionCoordinatorAgent: the actual execution
+    path goes through the plain async function chain (open_case ->
+    error_detection_case -> run_error_detection_sweep -> the real sub-agents), not by
+    re-invoking these declared instances through the ADK runner directly."""
+
+    def __init__(self, name: str = "orchestrator"):
+        # Fresh instances for all three — an ADK agent can only ever have
+        # one parent, permanently (confirmed: reusing a shared singleton
+        # like scene_graph_builder.agent.AGENT here raises a real pydantic
+        # ValidationError the moment OrchestratorAgent is constructed a
+        # second time — the same bug this fixed in ErrorDetectionCoordinatorAgent).
+        # Each build_subagent() call here is identically configured to its
+        # module's own AGENT singleton, just not the literal same object —
+        # fine for Registry visibility, which cares about real
+        # configuration, not Python object identity.
+        super().__init__(
+            name=name,
+            sub_agents=[ErrorDetectionCoordinatorAgent(), build_perception_subagent()],
+        )
+
+    async def _run_async_impl(self, ctx: InvocationContext) -> AsyncGenerator[Event, None]:
+        state = ctx.session.state
+        video_id = state.get("video_id")
+        case_id = state.get("case_id", ctx.session.id)
+
+        if not video_id:
+            yield Event(
+                author=self.name,
+                content=types.Content(role="model", parts=[types.Part.from_text(text="orchestrator: no video_id in session state, nothing to do")]),
+            )
+            return
+
+        fired = await open_case(case_id, video_id)
+        summary = f"Orchestrator opened case {case_id} for {video_id}, {len(fired)} divergence(s) fired."
+        yield Event(author=self.name, content=types.Content(role="model", parts=[types.Part.from_text(text=summary)]))

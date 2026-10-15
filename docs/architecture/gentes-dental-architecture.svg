@@ -1,0 +1,320 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1210" width="1920" height="1210" style="background: #ffffff; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
+  <defs>
+    <marker id="dent-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#64748b" />
+    </marker>
+    <marker id="dent-arrow-accent" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1 L 9 5 L 0 9 z" fill="#7c3aed" />
+    </marker>
+  </defs>
+
+  <!-- Containers -->
+  <!-- Google Cloud Outer Boundary -->
+  <g id="box-gcp">
+    <rect x="312" y="96" width="1310" height="1050" fill="#f7fafd" stroke="#94a3b8" stroke-width="2" stroke-dasharray="6 4" rx="8" />
+    <text x="330" y="124" font-size="16" font-weight="700" fill="#0f172a" font-family="monospace">Google Cloud · liveapi-488810 · us-central1</text>
+  </g>
+
+  <!-- GentesGraph Subsystem -->
+  <g id="box-dentalgraph">
+    <rect x="338" y="286" width="606" height="322" fill="#eef4fc" stroke="#b9d3f0" stroke-width="1.5" rx="8" />
+    <text x="356" y="314" font-size="14" font-weight="700" fill="#0f172a" font-family="monospace">GentesGraph subsystem — autonomous dental safety pipeline</text>
+    <text x="356" y="332" font-size="11" fill="#64748b">Monitors bur speed &amp; pulpal proximity; enforces cryptographic verification before restoration seal</text>
+  </g>
+
+  <!-- GentesBot Subsystem -->
+  <g id="box-gentesbot">
+    <rect x="976" y="286" width="620" height="322" fill="#eef7f1" stroke="#a7d7bd" stroke-width="1.5" rx="8" />
+    <text x="994" y="314" font-size="14" font-weight="700" fill="#0f172a" font-family="monospace">GentesBot subsystem — chairside voice copilot</text>
+    <text x="994" y="332" font-size="11" fill="#64748b">Dentist logs perio probing hands-free &amp; reviews restorations; approved feedback becomes practice memory</text>
+  </g>
+
+  <!-- Shared Services -->
+  <g id="box-shared">
+    <rect x="338" y="664" width="1258" height="336" fill="#f8f6fd" stroke="#d3c2f5" stroke-width="1.5" rx="8" />
+    <text x="356" y="692" font-size="14" font-weight="700" fill="#0f172a" font-family="monospace">Shared services</text>
+    <text x="356" y="710" font-size="11" fill="#64748b">Both subsystems read and write through the same state, models and guardrails</text>
+  </g>
+
+  <!-- Connectors / Walkthrough Edges -->
+  <!-- 1. dataset -> gcs -->
+  <path d="M 274 189 L 338 189" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#dent-arrow)" />
+  <rect x="292" y="177" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="306" y="193" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">1</text>
+  <text x="210" y="174" font-size="10" font-family="monospace" font-weight="700" fill="#334155">GCS: Intraoral video + bitewings</text>
+
+  <!-- 2. frontend -> orchestrator -->
+  <path d="M 996 232 L 996 262 L 641 262 L 641 350" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="760" y="250" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="774" y="266" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">2</text>
+  <text x="792" y="258" font-size="10" font-family="monospace" font-weight="700" fill="#334155">POST /cases/open</text>
+
+  <!-- 3. orchestrator -> vertex -->
+  <path d="M 362 421 L 300 421 L 300 638 L 555 638 L 555 722" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="286" y="520" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="300" y="536" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">3</text>
+  <text x="316" y="534" font-size="10" font-family="monospace" font-weight="700" fill="#334155">Gemini 3.5: Tooth Vision + Bur Tracking</text>
+
+  <!-- 4. orchestrator -> stateservice -->
+  <path d="M 641 492 L 641 522" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="627" y="495" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="641" y="511" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">4</text>
+  <text x="660" y="510" font-size="10" font-family="monospace" font-weight="700" fill="#334155">32-tooth graph patches</text>
+
+  <!-- 5. stateservice -> firestore -->
+  <path d="M 734 592 L 734 638 L 988 638 L 988 722" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="850" y="626" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="864" y="642" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">5</text>
+  <text x="880" y="634" font-size="10" font-family="monospace" font-weight="700" fill="#334155">Firestore: transactional write</text>
+
+  <!-- 6. orchestrator -> litapis -->
+  <path d="M 362 450 L 300 450 L 300 559 L 274 559" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="286" y="490" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="300" y="506" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">6</text>
+  <text x="210" y="500" font-size="10" font-family="monospace" font-weight="700" fill="#334155">JADA / JOE guidelines</text>
+
+  <!-- 7. orchestrator -> fhir -->
+  <path d="M 362 470 L 322 470 L 322 427 L 274 427" fill="none" stroke="#c98500" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="308" y="440" width="28" height="24" rx="4" fill="#c98500" />
+  <text x="322" y="456" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">7</text>
+  <text x="200" y="445" font-size="10" font-family="monospace" font-weight="700" fill="#c98500">verified CDT codes + SOAP</text>
+
+  <!-- 8. dentist -> relay -->
+  <path d="M 1660 427 L 1572 427" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="1602" y="415" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="1616" y="431" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">8</text>
+  <text x="1635" y="415" font-size="10" font-family="monospace" font-weight="700" fill="#334155">voice perio charting</text>
+
+  <!-- 9. relay -> agentruntime -->
+  <path d="M 1286 430 L 1286 452" fill="none" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="1272" y="432" width="28" height="24" rx="4" fill="#0f172a" />
+  <text x="1286" y="448" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">9</text>
+
+  <!-- 10. agentruntime -> memorybank -->
+  <path d="M 1286 588 L 1286 638 L 988 638 L 988 820" fill="none" stroke="#c98500" stroke-width="1.5" marker-end="url(#dent-arrow)" />
+  <rect x="1120" y="626" width="28" height="24" rx="4" fill="#c98500" />
+  <text x="1134" y="642" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">10</text>
+  <text x="1150" y="634" font-size="10" font-family="monospace" font-weight="700" fill="#c98500">on approval only</text>
+
+  <!-- 11. memorybank -> vertex -->
+  <path d="M 790 861 L 760 861 L 760 1008 L 555 1008 L 555 804" fill="none" stroke="#7c3aed" stroke-width="2.5" marker-end="url(#dent-arrow-accent)" />
+  <rect x="640" y="996" width="28" height="24" rx="4" fill="#7c3aed" />
+  <text x="654" y="1012" fill="#ffffff" font-size="12" font-weight="800" text-anchor="middle" font-family="monospace">11</text>
+  <text x="675" y="1006" font-size="10" font-family="monospace" font-weight="700" fill="#7c3aed">informs future preps (closed loop)</text>
+
+  <!-- External Left Nodes -->
+  <!-- Oral32 Dataset -->
+  <g transform="translate(40, 150)">
+    <rect width="234" height="78" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5" />
+    <rect width="6" height="78" rx="2" fill="#64748b" />
+    <rect x="14" y="12" width="26" height="26" rx="4" fill="#f1f5f9" />
+    <text x="27" y="29" font-size="11" font-weight="800" fill="#334155" text-anchor="middle" font-family="monospace">▶</text>
+    <text x="48" y="24" font-size="12" font-weight="800" fill="#0f172a">Oral32-Dataset &amp; RVG</text>
+    <text x="48" y="38" font-size="10" fill="#64748b">4K intraoral video + bitewings</text>
+  </g>
+
+  <!-- Dentrix FHIR -->
+  <g transform="translate(40, 386)">
+    <rect width="234" height="82" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#64748b" />
+    <rect x="14" y="12" width="26" height="26" rx="4" fill="#f1f5f9" />
+    <text x="27" y="29" font-size="10" font-weight="800" fill="#334155" text-anchor="middle" font-family="monospace">FHIR</text>
+    <text x="48" y="24" font-size="12" font-weight="800" fill="#0f172a">Dentrix / Eaglesoft FHIR</text>
+    <text x="48" y="38" font-size="10" fill="#64748b">external Dental EHR · CDT billing</text>
+  </g>
+
+  <!-- JADA Literature -->
+  <g transform="translate(40, 520)">
+    <rect width="234" height="78" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5" />
+    <rect width="6" height="78" rx="2" fill="#64748b" />
+    <rect x="14" y="12" width="26" height="26" rx="4" fill="#f1f5f9" />
+    <text x="27" y="29" font-size="10" font-weight="800" fill="#334155" text-anchor="middle" font-family="monospace">JADA</text>
+    <text x="48" y="24" font-size="12" font-weight="800" fill="#0f172a">JADA · JOE · ITI Consensus</text>
+    <text x="48" y="38" font-size="10" fill="#64748b">3 dental literature RAG APIs</text>
+  </g>
+
+  <!-- GitHub -->
+  <g transform="translate(40, 1030)">
+    <rect width="234" height="78" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1.5" />
+    <rect width="6" height="78" rx="2" fill="#64748b" />
+    <rect x="14" y="12" width="26" height="26" rx="4" fill="#f1f5f9" />
+    <text x="27" y="29" font-size="10" font-weight="800" fill="#334155" text-anchor="middle" font-family="monospace">GH</text>
+    <text x="48" y="24" font-size="12" font-weight="800" fill="#0f172a">GitHub</text>
+    <text x="48" y="38" font-size="10" fill="#64748b">push to main triggers deploy</text>
+  </g>
+
+  <!-- External Right Node: Dentist -->
+  <g transform="translate(1660, 386)">
+    <rect width="226" height="82" rx="6" fill="#ffffff" stroke="#c98500" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#c98500" />
+    <rect x="14" y="12" width="26" height="26" rx="4" fill="#f1f5f9" />
+    <text x="27" y="29" font-size="14" font-weight="800" fill="#c98500" text-anchor="middle">☺</text>
+    <text x="48" y="24" font-size="12" font-weight="800" fill="#0f172a">Dentist / Chairside Team</text>
+    <text x="48" y="38" font-size="10" fill="#64748b">voice perio charting &amp; gate sign-off</text>
+  </g>
+
+  <!-- Ingestion Nodes -->
+  <!-- Cloud Storage -->
+  <g transform="translate(338, 150)">
+    <rect width="400" height="82" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#7c3aed" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Cloud Storage</text>
+    <text x="24" y="44" font-size="11" fill="#64748b">intraoral video · bitewings · 3D STL scans</text>
+  </g>
+
+  <!-- Cloud Run Frontend -->
+  <g transform="translate(796, 150)">
+    <rect width="400" height="82" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#2a78d6" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Cloud Run — frontend</text>
+    <text x="24" y="44" font-size="11" fill="#64748b">React 32-tooth odontogram + GentesBot · SSE</text>
+    <text x="24" y="60" font-size="10" fill="#7c3aed" font-style="italic">runs as a zero-permission identity</text>
+  </g>
+
+  <!-- GentesGraph Subsystem Nodes -->
+  <!-- Dental Orchestrator -->
+  <g transform="translate(362, 350)">
+    <rect width="558" height="142" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5" />
+    <rect width="6" height="142" rx="2" fill="#2a78d6" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Cloud Run — dental orchestrator</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">12 in-process ADK components on an event bus</text>
+    <text x="24" y="66" font-size="10" fill="#334155" font-family="monospace">• Anatomy Mapper · Bur Tracker · Pulpal Proximity ×3</text>
+    <text x="24" y="82" font-size="10" fill="#334155" font-family="monospace">• Restorative Margins · ADA CDT Coder</text>
+    <text x="24" y="98" font-size="10" fill="#334155" font-family="monospace">• Verification Gate · Indirect Pulp Capping</text>
+  </g>
+
+  <!-- Dental State Service -->
+  <g transform="translate(548, 522)">
+    <rect width="372" height="70" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5" />
+    <rect width="6" height="70" rx="2" fill="#2a78d6" />
+    <text x="24" y="26" font-size="13" font-weight="800" fill="#0f172a">Cloud Run — dental state service</text>
+    <text x="24" y="44" font-size="11" fill="#64748b">single writer of 32-Tooth Living State Graph</text>
+  </g>
+
+  <!-- GentesBot Subsystem Nodes -->
+  <!-- Relay -->
+  <g transform="translate(1000, 350)">
+    <rect width="572" height="80" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5" />
+    <rect width="6" height="80" rx="2" fill="#2a78d6" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Cloud Run — GentesBot relay</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">WebSocket; screens chairside voice before model sees it</text>
+  </g>
+
+  <!-- Agent Runtime GEAP -->
+  <g transform="translate(1000, 452)">
+    <rect width="572" height="136" rx="6" fill="#ffffff" stroke="#2a78d6" stroke-width="1.5" />
+    <rect width="6" height="136" rx="2" fill="#2a78d6" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Agent Runtime (GEAP)</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">5 separately deployed dental reasoning engines</text>
+    <text x="24" y="66" font-size="10" fill="#334155" font-family="monospace">• Root Assistant · Voice Perio Probing · Pulpal Risk</text>
+    <text x="24" y="82" font-size="10" fill="#334155" font-family="monospace">• Restorative Margin Inspector · ADA CDT Derived Billing</text>
+    <text x="24" y="98" font-size="10" fill="#334155" font-family="monospace">• 4 hold SPIFFE Agent Identity</text>
+  </g>
+
+  <!-- Shared Services Nodes -->
+  <!-- Gemini 3.5 Flash -->
+  <g transform="translate(362, 722)">
+    <rect width="386" height="82" rx="6" fill="#ffffff" stroke="#0b3a63" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#0b3a63" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Vertex AI — Gemini 3.5 Flash</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">multimodal tooth vision, caries bur tracking &amp; SOAP notes</text>
+  </g>
+
+  <!-- MedASR (Dental) -->
+  <g transform="translate(362, 820)">
+    <rect width="386" height="76" rx="6" fill="#ffffff" stroke="#0b3a63" stroke-width="1.5" />
+    <rect width="6" height="76" rx="2" fill="#0b3a63" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Vertex AI — MedASR (Dental)</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">specialized dental speech recognition</text>
+  </g>
+
+  <!-- Firestore Dental State -->
+  <g transform="translate(790, 722)">
+    <rect width="396" height="82" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#7c3aed" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Firestore</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">Dental State Graph · 32 teeth nodes, pulp proximity edges</text>
+  </g>
+
+  <!-- Memory Bank GEAP -->
+  <g transform="translate(790, 820)">
+    <rect width="396" height="82" rx="6" fill="#ffffff" stroke="#7c3aed" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#7c3aed" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Memory Bank (GEAP)</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">approved dentist feedback, retrieved by similarity</text>
+  </g>
+
+  <!-- Governance Nodes -->
+  <!-- Model Armor -->
+  <g transform="translate(1228, 722)">
+    <rect width="344" height="82" rx="6" fill="#ffffff" stroke="#d5578a" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#d5578a" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Model Armor</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">one template, screens input and output</text>
+  </g>
+
+  <!-- IAM -->
+  <g transform="translate(1228, 820)">
+    <rect width="344" height="82" rx="6" fill="#ffffff" stroke="#d5578a" stroke-width="1.5" />
+    <rect width="6" height="82" rx="2" fill="#d5578a" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">IAM</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">3 least-privilege service accounts</text>
+  </g>
+
+  <!-- Agent Registry + Identity -->
+  <g transform="translate(1228, 912)">
+    <rect width="344" height="70" rx="6" fill="#ffffff" stroke="#d5578a" stroke-width="1.5" />
+    <rect width="6" height="70" rx="2" fill="#d5578a" />
+    <text x="24" y="26" font-size="13" font-weight="800" fill="#0f172a">Agent Registry + Identity</text>
+    <text x="24" y="42" font-size="11" fill="#64748b">6 registered dental services · SPIFFE certs</text>
+  </g>
+
+  <!-- Ops & CI/CD Nodes -->
+  <!-- Observability -->
+  <g transform="translate(338, 1030)">
+    <rect width="596" height="78" rx="6" fill="#ffffff" stroke="#1a8f1a" stroke-width="1.5" />
+    <rect width="6" height="78" rx="2" fill="#1a8f1a" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Cloud Trace · Logging · Monitoring</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">OpenTelemetry GenAI spans across every dental service</text>
+  </g>
+
+  <!-- Cloud Build CI/CD -->
+  <g transform="translate(976, 1030)">
+    <rect width="620" height="78" rx="6" fill="#ffffff" stroke="#1a8f1a" stroke-width="1.5" />
+    <rect width="6" height="78" rx="2" fill="#1a8f1a" />
+    <text x="24" y="28" font-size="13" font-weight="800" fill="#0f172a">Cloud Build → Artifact Registry</text>
+    <text x="24" y="46" font-size="11" fill="#64748b">10-step pipeline · deploys all dental services</text>
+  </g>
+
+  <!-- Legend Footer -->
+  <g transform="translate(40, 1160)">
+    <g transform="translate(0, 0)">
+      <rect width="16" height="16" rx="3" fill="#2a78d6" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">Compute — Cloud Run / Agent Runtime</text>
+    </g>
+    <g transform="translate(280, 0)">
+      <rect width="16" height="16" rx="3" fill="#0b3a63" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">Model endpoint — Vertex AI</text>
+    </g>
+    <g transform="translate(520, 0)">
+      <rect width="16" height="16" rx="3" fill="#7c3aed" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">State &amp; storage</text>
+    </g>
+    <g transform="translate(720, 0)">
+      <rect width="16" height="16" rx="3" fill="#d5578a" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">Governance &amp; security</text>
+    </g>
+    <g transform="translate(940, 0)">
+      <rect width="16" height="16" rx="3" fill="#1a8f1a" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">Observability &amp; delivery</text>
+    </g>
+    <g transform="translate(1180, 0)">
+      <rect width="16" height="16" rx="3" fill="#64748b" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">External — outside Google Cloud</text>
+    </g>
+    <g transform="translate(1440, 0)">
+      <rect width="16" height="16" rx="3" fill="#c98500" />
+      <text x="24" y="12" font-size="11" fill="#475569" font-weight="600">Human in the loop</text>
+    </g>
+  </g>
+</svg>

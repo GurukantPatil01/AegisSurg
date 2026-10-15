@@ -1,0 +1,233 @@
+:root {
+  /* Minimal Modern Brutalism Design Tokens */
+  --page: #f7f6f2;
+  --surface-1: #ffffff;
+  --surface-subtle: #eeede7;
+  --text-primary: #0a0a0a;
+  --text-secondary: #444444;
+  --text-muted: #737373;
+  --gridline: #000000;
+  --border: #000000;
+  --border-width: 2px;
+  --baseline: #000000;
+
+  /* Accent & Highlight (Used sparingly) */
+  --accent-primary: #0047ff; /* Vivid Cobalt / International Klein Blue */
+  --accent-secondary: #ff3b00; /* Signal Vermillion / Alert */
+  
+  /* Status indicators - Stark & unambiguous */
+  --status-good: #008844;
+  --status-warning: #ff8800;
+  --status-serious: #ff3b00;
+  --status-critical: #d00000;
+
+  /* Graph series colors (high contrast brutalist palette) */
+  --series-1: #0047ff;
+  --series-2: #ff3b00;
+  --series-3: #008844;
+  --series-4: #e59900;
+  --series-5: #6d28d9;
+  --series-6: #0f766e;
+  --series-7: #1e293b;
+  --series-8: #b91c1c;
+  --node-brown: #573c26;
+
+  /* Typography */
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", "Space Mono", Menlo, Consolas, monospace;
+
+  font-family: var(--font-sans);
+  color: var(--text-primary);
+  background: var(--page);
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+  border-radius: 0 !important; /* Enforce sharp brutalist edges */
+}
+
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  background: var(--page);
+  color: var(--text-primary);
+}
+
+body {
+  overflow-x: hidden;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  color: var(--text-primary);
+  letter-spacing: -0.025em;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
+
+code,
+pre,
+.mono {
+  font-family: var(--font-mono);
+}
+
+/* Modern Brutalist Button Base */
+button {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  border: 2px solid #000000;
+  background: #ffffff;
+  color: #000000;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background-color 0.12s ease, color 0.12s ease;
+}
+
+button:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+button:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px #000000;
+}
+
+/* Input Fields */
+input,
+textarea,
+select {
+  font-family: var(--font-mono);
+  border: 2px solid #000000;
+  background: #ffffff;
+  color: #000000;
+  outline: none;
+  border-radius: 0;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: #000000;
+  box-shadow: 2px 2px 0px #000000;
+}
+
+/* Selection */
+::selection {
+  background: #000000;
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   MINIMAL MODERN BRUTALISM — DARK MODE DESIGN TOKENS
+   ========================================================================== */
+[data-theme="dark"] {
+  --page: #0a0b0e;
+  --surface-1: #13151b;
+  --surface-subtle: #1c1f28;
+  --text-primary: #f4f4f6;
+  --text-secondary: #a1a1aa;
+  --text-muted: #71717a;
+  --gridline: #2e3340;
+  --border: #2e3340;
+  --border-width: 2px;
+  --baseline: #ffffff;
+  color-scheme: dark;
+
+  /* Gentes Dental OS tokens in Dark Mode */
+  --brutal-bg: #0a0b0e;
+  --brutal-surface: #13151b;
+  --brutal-surface-subtle: #1c1f28;
+  --brutal-black: #f4f4f6;
+  --brutal-text: #f4f4f6;
+  --brutal-text-secondary: #a1a1aa;
+  --brutal-text-muted: #71717a;
+  --brutal-border: 2px solid #2e3340;
+  --brutal-border-thin: 1px solid #2e3340;
+  --brutal-shadow: 3px 3px 0px #2e3340;
+  --brutal-shadow-sm: 2px 2px 0px #2e3340;
+}
+
+[data-theme="dark"] body,
+[data-theme="dark"] #root {
+  background-color: var(--page);
+  color: var(--text-primary);
+}
+
+[data-theme="dark"] button {
+  border-color: #3b4252;
+  background: #181b22;
+  color: #f4f4f6;
+}
+
+[data-theme="dark"] button:hover {
+  box-shadow: 2px 2px 0px #4c566a;
+}
+
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: #13151b;
+  color: #f4f4f6;
+  border-color: #3b4252;
+}
+
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: #f4f4f6;
+  box-shadow: 2px 2px 0px #f4f4f6;
+}
+
+[data-theme="dark"] ::selection {
+  background: #ffef44;
+  color: #000000;
+}
+
+[data-theme="dark"] .dashboard__header,
+[data-theme="dark"] .dental-header {
+  background: #13151b !important;
+  border-color: #2e3340 !important;
+}
+
+[data-theme="dark"] .cockpit-card {
+  background: #13151b !important;
+  border-color: #2e3340 !important;
+  box-shadow: 3px 3px 0px #2e3340 !important;
+}
+
+[data-theme="dark"] .card-header,
+[data-theme="dark"] .dental-context-bar {
+  background: #1c1f28 !important;
+  border-color: #2e3340 !important;
+}
+
+[data-theme="dark"] .home {
+  background: #0a0b0e !important;
+}
+
+[data-theme="dark"] .home__card,
+[data-theme="dark"] .home__terminal {
+  background: #13151b !important;
+  border-color: #2e3340 !important;
+}
+
